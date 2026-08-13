@@ -454,6 +454,35 @@ function selGiorno(iso){ giornoSel=iso; render(); }
 function creaSedutaRapida(){ stato.sedute.push({id:nuovoId(),data:giornoSel,memorie:[]}); stato.sedute.sort((a,b)=>a.data.localeCompare(b.data)); agg(); }
 
 /* ---------- CdA ---------- */
+// Genera il prompt pronto per Cowork/progetto CDA, calibrato sullo stato della memoria
+function promptMemoria(sed, m){
+  const dataSeduta = fmtIT(sed.data);
+  let testo, etichetta;
+  if(m.stato === "attesa"){
+    testo = `Prepara un sollecito istituzionale a ${m.dirigente} per la memoria "${m.oggetto}" attesa per la seduta CdA del ${dataSeduta}: termine di presentazione ${fmtIT(scadenzaMemorie(sed.data))}, tono cortese ma fermo, richiamo al rispetto dei termini regolamentari.`;
+    etichetta = "Sollecito pronto per Cowork";
+  } else {
+    testo = `Istruisci la memoria di ${m.dirigente} su "${m.oggetto}" per la seduta CdA del ${dataSeduta}: verifica errori e refusi, congruità interna, conformità normativa (D.Lgs. 509/94, normativa COVIP, Codice Appalti se pertinente), impatto economico e organizzativo. Produci una scheda istruttoria sintetica con esito consigliato e i punti su cui il CdA deve deliberare.`;
+    etichetta = "Istruttoria pronta per Cowork";
+  }
+  const id = "pm_"+m.id;
+  return `<div style="border-top:1px dashed #E3E1D9;margin-top:8px;padding-top:8px;">
+    <div style="font-size:11px;font-weight:700;color:var(--muto);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">${etichetta}</div>
+    <textarea id="${id}" readonly style="min-height:54px;background:var(--carta2);font-size:12px;" onfocus="this.select()">${esc(testo)}</textarea>
+    <button class="btn btn-s btn-piccolo" style="margin-top:6px;" onclick="copiaDaCampo('${id}',this)">Copia</button>
+  </div>`;
+}
+async function copiaDaCampo(id, btn){
+  const el = document.getElementById(id);
+  if(!el) return;
+  try{
+    await navigator.clipboard.writeText(el.value);
+    btn.textContent="Copiato ✓"; setTimeout(()=>btn.textContent="Copia",2000);
+  }catch(e){
+    el.focus(); el.select();
+    btn.textContent="Selezionato — copialo"; setTimeout(()=>btn.textContent="Copia",3000);
+  }
+}
 function viewCdA(){
   const seduteOrd = [...stato.sedute].sort((a,b)=>a.data.localeCompare(b.data));
   return `<div class="titolo">Consiglio di Amministrazione</div>
@@ -482,6 +511,7 @@ function viewCdA(){
               </select>
             </div>
             ${!m.ricevutaIl? `<button class="btn btn-s btn-piccolo" style="margin-top:6px;" onclick="cambiaMemoria('${sed.id}','${m.id}','ricevutaIl','${oggiISO()}')">Segna ricevuta oggi</button>`:""}
+            ${promptMemoria(sed, m)}
           </div>`;
         }).join("")}
         <div style="border-top:1px solid #F0EEE6;padding-top:10px;margin-top:4px;">
@@ -491,10 +521,15 @@ function viewCdA(){
           <button class="btn btn-p btn-piccolo" onclick="aggiungiMemoria('${sed.id}')">Salva memoria</button>
           <button class="btn btn-d btn-piccolo" onclick="eliminaSeduta('${sed.id}')">Elimina seduta</button>
         </div>
+        ${(sed.memorie||[]).length>0 ? `<div style="border-top:1px dashed #E3E1D9;margin-top:10px;padding-top:8px;">
+          <div style="font-size:11px;font-weight:700;color:var(--muto);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Preparazione seduta — pronto per Cowork</div>
+          <textarea id="ps_${sed.id}" readonly style="min-height:54px;background:var(--carta2);font-size:12px;" onfocus="this.select()">${esc(`Prepara la mia nota di sintesi per la seduta CdA del ${fmtIT(sed.data)}. Punti all'ordine del giorno secondo le memorie pervenute: ${(sed.memorie||[]).map(m=>m.dirigente+" — "+m.oggetto).join("; ")}. Per ciascun punto: sintesi in 3 righe, criticità, esito consigliato e domande da porre in sede.`)}</textarea>
+          <button class="btn btn-s btn-piccolo" style="margin-top:6px;" onclick="copiaDaCampo('ps_${sed.id}',this)">Copia</button>
+        </div>` : ""}
       </div>`;
     }).join("")}
     <div class="card" style="background:var(--carta2);">
-      <div style="font-size:14px;">Istruttoria assistita: quando arriva una memoria, apri una chat con Claude, incollala e scrivi «Istruisci questa memoria per la seduta CdA del [data]». Poi aggiorna qui lo stato in Istruita.</div>
+      <div style="font-size:14px;">Ogni memoria qui sopra ha già il suo prompt pronto: <b>in attesa</b> → testo di sollecito al dirigente; <b>ricevuta</b> → istruttoria completa. Copia e incolla nel progetto <b>CDA</b> in Cowork, poi aggiorna qui lo stato.</div>
     </div>`;
 }
 function aggiungiSeduta(){ const d=document.getElementById("nuovaDataSeduta").value; if(!d) return; stato.sedute.push({id:nuovoId(),data:d,memorie:[]}); stato.sedute.sort((a,b)=>a.data.localeCompare(b.data)); agg(); }
