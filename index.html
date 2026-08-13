@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Direzione ENPACL</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js"></script>
+<style>
+  :root{
+    --blu:#1B2A41; --ocra:#8C6D3F; --rosso:#A32020; --verde:#2E6E4E; --viola:#6B4FA1;
+    --carta:#FAFAF7; --carta2:#F7F5EE; --bordo:#E3E1D9; --testo:#1B2A41; --muto:#5B6B7C;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--carta);color:var(--testo);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}
+  h1,h2,.serif{font-family:Georgia,'Times New Roman',serif;}
+  .app{display:flex;min-height:100vh;}
+  .side{width:210px;background:var(--blu);padding:22px 12px;flex-shrink:0;}
+  .side .logo{font-family:Georgia,serif;font-size:18px;font-weight:700;color:var(--carta);padding:0 10px 18px;}
+  .side button{display:block;width:100%;text-align:left;background:transparent;color:#C7CEDA;border:none;border-radius:8px;padding:11px 12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:2px;}
+  .side button.attivo{background:var(--carta);color:var(--blu);}
+  .side .stato{font-size:11px;color:#7C8AA0;padding:16px 12px 0;}
+  .main{flex:1;overflow-y:auto;}
+  .wrap{max-width:900px;margin:0 auto;padding:24px 20px 60px;}
+  .card{background:#fff;border:1px solid var(--bordo);border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:0 1px 2px rgba(27,42,65,.05);}
+  .titolo{font-size:22px;font-weight:700;color:var(--blu);margin:4px 0 14px;}
+  input,textarea,select{width:100%;box-sizing:border-box;padding:10px 12px;font-size:16px;border:1px solid #C9C6BA;border-radius:8px;background:#fff;color:var(--testo);font-family:inherit;}
+  textarea{font-family:monospace;font-size:13px;}
+  label{display:block;margin-bottom:10px;}
+  label > span{display:block;font-size:12px;font-weight:700;color:var(--muto);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+  .btn{border:none;border-radius:8px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .btn-p{background:var(--blu);color:var(--carta);}
+  .btn-s{background:#EEECE4;color:var(--blu);}
+  .btn-d{background:#FDF1F1;color:var(--rosso);border:1px solid #E8C5C5;}
+  .btn-piccolo{padding:7px 11px;font-size:13px;}
+  .riga{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F0EEE6;}
+  .badge{display:inline-block;border-radius:4px;padding:1px 8px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;transform:rotate(-1.5deg);white-space:nowrap;}
+  .bento{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px;}
+  .quad{background:#fff;border:1px solid var(--bordo);border-top:4px solid;border-radius:12px;padding:14px;min-height:170px;display:flex;flex-direction:column;}
+  .quad h3{margin:0 0 8px;font-family:Georgia,serif;font-size:17px;color:var(--blu);cursor:pointer;}
+  .dot{width:8px;height:8px;border-radius:4px;display:inline-block;margin-right:7px;flex-shrink:0;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+  .cal-giorno{min-height:46px;border-radius:8px;padding:4px 2px 2px;text-align:center;cursor:pointer;border:1px solid transparent;}
+  .cal-giorno.oggi{border-color:var(--blu);}
+  .cal-giorno.sel{background:var(--blu);color:#fff;}
+  .esito{margin-top:10px;padding:10px;border-radius:8px;font-size:14px;}
+  .esito.ok{background:#EEF5F0;color:var(--verde);}
+  .esito.no{background:#FDF1F1;color:var(--rosso);}
+  .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--blu);padding:20px;}
+  .login-box{background:var(--carta);border-radius:14px;padding:32px;max-width:420px;width:100%;text-align:center;}
+  .mobile-nav{display:none;}
+  @media (max-width:860px){
+    .side{display:none;}
+    .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--blu);justify-content:space-around;padding:10px 4px calc(10px + env(safe-area-inset-bottom));z-index:10;}
+    .mobile-nav button{background:transparent;color:var(--carta);border:none;border-radius:8px;padding:8px 8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+    .mobile-nav button.attivo{background:var(--carta);color:var(--blu);}
+    .main{padding-bottom:70px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="login" class="login-screen">
+  <div class="login-box">
+    <div class="serif" style="font-size:22px;font-weight:700;color:var(--blu);">Direzione ENPACL</div>
+    <p style="color:var(--muto);font-size:14px;margin:8px 0 22px;">Accedi con il tuo account Google per usare la dashboard, sincronizzata su tutti i tuoi dispositivi.</p>
+    <div id="setup" style="display:none;text-align:left;font-size:13px;color:var(--muto);background:var(--carta2);border-radius:8px;padding:12px;margin-bottom:16px;">
+      Prima configurazione: incolla qui il tuo <b>Client ID Google</b> (lo crei una volta sola su Google Cloud Console — vedi istruzioni allegate).
+      <input id="clientIdInput" placeholder="xxxxxxxx.apps.googleusercontent.com" style="margin-top:8px;"/>
+      <button class="btn btn-s" style="margin-top:8px;" onclick="salvaClientId()">Salva e continua</button>
+    </div>
+    <div id="gsi-button"></div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-s btn-piccolo" onclick="mostraSetup()">Configura Client ID</button>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="app" style="display:none;">
+  <div class="side">
+    <div class="logo">Direzione<br/>ENPACL</div>
+    <button data-tab="oggi" class="attivo">Home</button>
+    <button data-tab="cal">Calendario</button>
+    <button data-tab="cda">CdA</button>
+    <button data-tab="att">Attività</button>
+    <button data-tab="scad">Scadenze</button>
+    <button data-tab="tra">Trasferte</button>
+    <button data-tab="dati">Dati e account</button>
+    <div class="stato" id="statoSync">—</div>
+  </div>
+  <div class="main"><div class="wrap" id="contenuto"></div></div>
+  <div class="mobile-nav">
+    <button data-tab="oggi" class="attivo">Home</button>
+    <button data-tab="cal">Mese</button>
+    <button data-tab="cda">CdA</button>
+    <button data-tab="att">Att.</button>
+    <button data-tab="scad">Scad.</button>
+    <button data-tab="tra">Trasf.</button>
+    <button data-tab="dati">Dati</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   CONFIGURAZIONE
+   ========================================================= */
+const SCOPES = "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/drive.appdata";
+const DRIVE_FILE_NAME = "direzione-enpacl-dati.json";
+let CLIENT_ID = localStorage.getItem("enpacl_client_id") || "";
+let accessToken = null;
+let driveFileId = null;
+let stato = null;
+let tabAttiva = "oggi";
+let saveTimer = null;
+
+const FASI_TRASFERTA = ["Scheda territoriale e slide","Alloggio e viaggio prenotati","Missione svolta","Rimborso presentato"];
+const STATO_VUOTO = { sedute:[], attivita:[], scadenze:[], trasferte:[], eventi:[], ricorrenti:[], pin:"" };
+
+/* ---------- Utilità ---------- */
+const oggiISO = () => new Date().toISOString().slice(0,10);
+const nuovoId = () => Math.random().toString(36).slice(2,9);
+function parseISO(s){ if(!s) return null; const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
+function fmtIT(s){ const d=parseISO(s); if(!d) return "—"; return d.toLocaleDateString("it-IT",{day:"numeric",month:"short",year:"numeric"}); }
+function giorniA(s){ const d=parseISO(s); if(!d) return null; return Math.round((d-parseISO(oggiISO()))/86400000); }
+function scadenzaMemorie(dataSeduta){ const d=parseISO(dataSeduta); if(!d) return null; const x=new Date(d); x.setDate(x.getDate()-10); return x.toISOString().slice(0,10); }
+function badge(giorni){
+  if(giorni===null) return "";
+  const scaduto=giorni<0, urgente=giorni>=0&&giorni<=3;
+  const testo = scaduto? `scaduto da ${-giorni} g` : giorni===0? "oggi" : `${giorni} g`;
+  const colore = scaduto? "var(--rosso)": urgente? "var(--ocra)":"var(--muto)";
+  return `<span class="badge" style="border:1.5px solid ${colore};color:${colore};">${testo}</span>`;
+}
+function esc(s){ return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* =========================================================
+   LOGIN GOOGLE
+   ========================================================= */
+function mostraSetup(){ document.getElementById("setup").style.display="block"; }
+function salvaClientId(){
+  const v = document.getElementById("clientIdInput").value.trim();
+  if(!v) return;
+  localStorage.setItem("enpacl_client_id", v);
+  CLIENT_ID = v;
+  document.getElementById("setup").style.display="none";
+  initGoogle();
+}
+function initGoogle(){
+  if(!CLIENT_ID){ mostraSetup(); return; }
+  google.accounts.id.initialize({ client_id: CLIENT_ID, callback: () => {} });
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: (resp) => {
+      if(resp.error){ alert("Accesso non riuscito: "+resp.error); return; }
+      accessToken = resp.access_token;
+      document.getElementById("login").style.display="none";
+      document.getElementById("app").style.display="flex";
+      avviaApp();
+    }
+  });
+  document.getElementById("gsi-button").innerHTML =
+    '<button class="btn btn-p" style="width:100%;padding:14px;" id="btnLogin">Accedi con Google</button>';
+  document.getElementById("btnLogin").onclick = () => client.requestAccessToken();
+}
+window.onload = () => { setTimeout(initGoogle, 300); };
+
+/* =========================================================
+   GOOGLE DRIVE — salvataggio dati (appDataFolder)
+   ========================================================= */
+async function driveApi(path, opts={}){
+  const r = await fetch("https://www.googleapis.com"+path, {
+    ...opts,
+    headers: { ...(opts.headers||{}), Authorization: "Bearer "+accessToken }
+  });
+  if(!r.ok) throw new Error("Drive: "+r.status);
+  return r;
+}
+async function trovaFileDrive(){
+  const r = await driveApi("/drive/v3/files?spaces=appDataFolder&q=name='"+DRIVE_FILE_NAME+"'&fields=files(id,name)");
+  const j = await r.json();
+  return (j.files && j.files[0]) ? j.files[0].id : null;
+}
+async function caricaDati(){
+  driveFileId = await trovaFileDrive();
+  if(!driveFileId) return { ...STATO_VUOTO };
+  const r = await driveApi("/drive/v3/files/"+driveFileId+"?alt=media");
+  const j = await r.json();
+  return { ...STATO_VUOTO, ...j, attivita:j.attivita||[], ricorrenti:j.ricorrenti||[], eventi:j.eventi||[] };
+}
+async function salvaDati(){
+  setStatoSync("salvando…");
+  const body = JSON.stringify(stato);
+  try{
+    if(!driveFileId){
+      const metadata = { name: DRIVE_FILE_NAME, parents: ["appDataFolder"] };
+      const form = new FormData();
+      form.append("metadata", new Blob([JSON.stringify(metadata)], {type:"application/json"}));
+      form.append("file", new Blob([body], {type:"application/json"}));
+      const r = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", {
+        method:"POST", headers:{ Authorization:"Bearer "+accessToken }, body: form
+      });
+      const j = await r.json();
+      driveFileId = j.id;
+    } else {
+      await driveApi("/upload/drive/v3/files/"+driveFileId+"?uploadType=media", { method:"PATCH", headers:{"Content-Type":"application/json"}, body });
+    }
+    setStatoSync("sincronizzato ✓");
+  }catch(e){
+    setStatoSync("errore salvataggio");
+  }
+}
+function programmaSalvataggio(){
+  if(saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(salvaDati, 700);
+}
+function setStatoSync(t){ const el=document.getElementById("statoSync"); if(el) el.textContent=t; }
+
+/* =========================================================
+   GOOGLE CALENDAR — lettura diretta (vera automazione)
+   ========================================================= */
+async function leggiEventiCalendar(){
+  const now = new Date();
+  const fra90 = new Date(now.getTime()+90*86400000);
+  const url = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+    + "?timeMin="+now.toISOString()
+    + "&timeMax="+fra90.toISOString()
+    + "&singleEvents=true&orderBy=startTime&maxResults=100";
+  const r = await fetch(url, { headers:{ Authorization:"Bearer "+accessToken }});
+  if(!r.ok) throw new Error("Calendar: "+r.status);
+  const j = await r.json();
+  return (j.items||[]).map(ev=>{
+    const inizio = ev.start.date || (ev.start.dateTime||"").slice(0,10);
+    let fine = ev.end.date || (ev.end.dateTime||"").slice(0,10);
+    // Google usa data di fine esclusiva per eventi "tutto il giorno": correggo di un giorno
+    if(ev.start.date && ev.end.date){
+      const f = parseISO(fine); f.setDate(f.getDate()-1); fine = f.toISOString().slice(0,10);
+    }
+    return { gId: ev.id, titolo: ev.summary||"(senza titolo)", inizio, fine: fine||inizio };
+  }).filter(e=>e.inizio && e.titolo);
+}
+function applicaEventiCalendar(eventi){
+  const visti = new Set();
+  eventi.forEach(ev=>{
+    const t = (ev.titolo||"").trim(); const low = t.toLowerCase();
+    const fine = ev.fine || ev.inizio;
+    if(/(^|\s)(cda|consiglio di amministrazione)/.test(low)){
+      visti.add(ev.gId);
+      const ex = stato.sedute.find(x=>x.gId===ev.gId);
+      if(ex){ ex.data = ev.inizio; }
+      else if(!stato.sedute.some(x=>x.data===ev.inizio)) stato.sedute.push({id:nuovoId(),gId:ev.gId,data:ev.inizio,memorie:[]});
+    } else if(/trasfert|missione/.test(low)){
+      visti.add(ev.gId);
+      const dest = t.replace(/trasferta|missione/i,"").replace(/^[\s:–-]+/,"").trim() || t;
+      const ex = stato.trasferte.find(x=>x.gId===ev.gId);
+      if(ex){ ex.dest=dest; ex.dal=ev.inizio; ex.al=fine; }
+      else stato.trasferte.push({id:nuovoId(),gId:ev.gId,dest,dal:ev.inizio,al:fine,checklist:{}});
+    } else if(/scadenza|termine|consegna/.test(low)){
+      visti.add(ev.gId);
+      const titolo = t.replace(/scadenza|termine|consegna/i,"").replace(/^[\s:–-]+/,"").trim() || t;
+      const ex = stato.scadenze.find(x=>x.gId===ev.gId);
+      if(ex){ ex.titolo=titolo; ex.data=ev.inizio; }
+      else stato.scadenze.push({id:nuovoId(),gId:ev.gId,titolo,data:ev.inizio,fatta:false});
+    } else {
+      visti.add(ev.gId);
+      const ex = stato.eventi.find(x=>x.gId===ev.gId);
+      if(ex){ ex.titolo=t; ex.data=ev.inizio; ex.fine=fine; }
+      else stato.eventi.push({id:nuovoId(),gId:ev.gId,titolo:t,data:ev.inizio,fine});
+    }
+  });
+  const oggi = oggiISO();
+  stato.sedute = stato.sedute.filter(x=>!x.gId || x.data<oggi || visti.has(x.gId));
+  stato.trasferte = stato.trasferte.filter(x=>!x.gId || (x.al||x.dal)<oggi || visti.has(x.gId));
+  stato.scadenze = stato.scadenze.filter(x=>!x.gId || x.fatta || x.data<oggi || visti.has(x.gId));
+  stato.eventi = stato.eventi.filter(x=>!x.gId || (x.fine||x.data)<oggi || visti.has(x.gId));
+  stato.sedute.sort((a,b)=>a.data.localeCompare(b.data));
+}
+async function sincronizzaCalendario(silenzioso){
+  if(!silenzioso) setStatoSync("leggo Google Calendar…");
+  try{
+    const eventi = await leggiEventiCalendar();
+    applicaEventiCalendar(eventi);
+    render();
+    programmaSalvataggio();
+    if(!silenzioso) setStatoSync("calendario aggiornato ✓");
+  }catch(e){
+    setStatoSync("errore calendario");
+  }
+}
+
+/* =========================================================
+   AVVIO APP
+   ========================================================= */
+async function avviaApp(){
+  setStatoSync("carico i tuoi dati…");
+  stato = await caricaDati();
+  render();
+  sincronizzaCalendario(true);          // sincronizzazione automatica all'apertura
+  setInterval(()=>sincronizzaCalendario(true), 60*60*1000); // e ogni ora, mentre la pagina resta aperta
+
+  document.querySelectorAll("[data-tab]").forEach(b=>{
+    b.onclick = () => { tabAttiva=b.dataset.tab; render(); };
+  });
+}
+
+function vai(tab){ tabAttiva=tab; render(); }
+function agg(){ programmaSalvataggio(); render(); }
+
+/* =========================================================
+   RENDER — router semplice
+   ========================================================= */
+function render(){
+  document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("attivo", b.dataset.tab===tabAttiva));
+  const c = document.getElementById("contenuto");
+  if(tabAttiva==="oggi") c.innerHTML = viewHome();
+  if(tabAttiva==="cal") c.innerHTML = viewCalendario();
+  if(tabAttiva==="cda") c.innerHTML = viewCdA();
+  if(tabAttiva==="att") c.innerHTML = viewAttivita();
+  if(tabAttiva==="scad") c.innerHTML = viewScadenze();
+  if(tabAttiva==="tra") c.innerHTML = viewTrasferte();
+  if(tabAttiva==="dati") c.innerHTML = viewDati();
+  attaccaEventi();
+}
+
+/* ---------- HOME ---------- */
+function viewHome(){
+  const dataLunga = new Date().toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  const seduteFuture = stato.sedute.filter(s=>giorniA(s.data)>=0).sort((a,b)=>a.data.localeCompare(b.data));
+  const prossimaSeduta = seduteFuture[0];
+  const memAttesa = prossimaSeduta ? (prossimaSeduta.memorie||[]).filter(m=>m.stato==="attesa").length : 0;
+  const attAperte = stato.attivita.filter(a=>a.stato!=="chiusa");
+  const attUrgenti = attAperte.filter(a=>a.scadenza && giorniA(a.scadenza)<=7);
+  const trasfFuture = stato.trasferte.filter(t=>giorniA(t.al||t.dal)>=0).sort((a,b)=>(a.dal||"").localeCompare(b.dal||""));
+  const prossimaTr = trasfFuture[0];
+  const fasiFatte = prossimaTr ? FASI_TRASFERTA.filter((_,i)=>prossimaTr.checklist?.[i]).length : 0;
+
+  let eventi=[];
+  stato.sedute.forEach(s=>{ if(giorniA(s.data)>=0) eventi.push({data:s.data,testo:"Seduta CdA",c:"var(--blu)"});
+    const m=scadenzaMemorie(s.data); if(m&&giorniA(m)>=0) eventi.push({data:m,testo:"Termine memorie",c:"var(--rosso)"}); });
+  stato.scadenze.forEach(s=>{ if(!s.fatta&&giorniA(s.data)>=0) eventi.push({data:s.data,testo:s.titolo,c:"var(--ocra)"}); });
+  attAperte.forEach(a=>{ if(a.scadenza&&giorniA(a.scadenza)>=0) eventi.push({data:a.scadenza,testo:a.titolo,c:"var(--viola)"}); });
+  trasfFuture.forEach(t=>eventi.push({data:t.dal,testo:"Trasferta "+t.dest,c:"var(--verde)"}));
+  stato.eventi.forEach(e=>{ if(giorniA(e.fine||e.data)>=0) eventi.push({data:e.data,testo:e.titolo,c:"var(--muto)"}); });
+  eventi.sort((a,b)=>a.data.localeCompare(b.data));
+
+  return `
+    <div style="margin-bottom:16px;">
+      <div style="font-size:13px;color:var(--muto);text-transform:capitalize;">${dataLunga}</div>
+      <h1 style="font-size:26px;margin:2px 0 0;">Direzione ENPACL</h1>
+    </div>
+    <div class="bento">
+      <div class="quad" style="border-top-color:var(--ocra);">
+        <h3 onclick="vai('cal')">Calendario ›</h3>
+        <div style="flex:1;">${eventi.length? eventi.slice(0,4).map(e=>`<div style="display:flex;gap:7px;align-items:center;padding:4px 0;"><span class="dot" style="background:${e.c};"></span><span style="font-size:14px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(e.testo)}</span><span style="font-size:12px;color:var(--muto);white-space:nowrap;">${fmtIT(e.data)}</span></div>`).join("") : '<div style="font-size:14px;color:var(--muto);">Nessun impegno in vista.</div>'}</div>
+        <div style="display:flex;gap:6px;margin-top:10px;"><button class="btn btn-p btn-piccolo" onclick="vai('cal')">Apri il mese</button><button class="btn btn-s btn-piccolo" onclick="sincronizzaCalendario(false)">⟳ Aggiorna</button></div>
+      </div>
+      <div class="quad" style="border-top-color:var(--blu);">
+        <h3 onclick="vai('cda')">CdA ›</h3>
+        <div style="flex:1;">${prossimaSeduta ? `
+          <div style="font-size:15px;font-weight:700;">Seduta del ${fmtIT(prossimaSeduta.data)}</div>
+          <div style="display:flex;gap:8px;align-items:center;margin:6px 0;"><span style="font-size:13px;color:var(--muto);">Memorie entro il ${fmtIT(scadenzaMemorie(prossimaSeduta.data))}</span>${badge(giorniA(scadenzaMemorie(prossimaSeduta.data)))}</div>
+          <div style="font-size:13px;font-weight:700;color:${memAttesa>0?"var(--rosso)":"var(--verde)"};">${memAttesa>0?memAttesa+" memorie in attesa":"Nessuna memoria in attesa"}</div>
+        ` : '<div style="font-size:14px;color:var(--muto);">Nessuna seduta in programma.</div>'}</div>
+        <div style="margin-top:10px;"><button class="btn btn-p btn-piccolo" onclick="vai('cda')">+ Seduta</button></div>
+      </div>
+      <div class="quad" style="border-top-color:var(--viola);">
+        <h3 onclick="vai('att')">Attività ›</h3>
+        <div style="display:flex;gap:18px;margin-bottom:6px;">
+          <div><div style="font-size:28px;font-weight:700;line-height:1;">${attAperte.length}</div><div style="font-size:12px;color:var(--muto);">aperte</div></div>
+          <div><div style="font-size:28px;font-weight:700;line-height:1;color:${attUrgenti.length>0?"var(--rosso)":"var(--verde)"};">${attUrgenti.length}</div><div style="font-size:12px;color:var(--muto);">entro 7 giorni</div></div>
+        </div>
+        <div style="margin-top:10px;"><button class="btn btn-p btn-piccolo" onclick="vai('att')">Incolla esito CdA</button></div>
+      </div>
+      <div class="quad" style="border-top-color:var(--verde);">
+        <h3 onclick="vai('tra')">Trasferte ›</h3>
+        <div style="flex:1;">${prossimaTr ? `
+          <div style="font-size:15px;font-weight:700;">${esc(prossimaTr.dest)}</div>
+          <div style="font-size:13px;color:var(--muto);margin:4px 0 8px;">${fmtIT(prossimaTr.dal)} → ${fmtIT(prossimaTr.al)}</div>
+          <div style="background:#EEECE4;border-radius:6px;height:8px;overflow:hidden;"><div style="width:${(fasiFatte/FASI_TRASFERTA.length)*100}%;background:var(--verde);height:100%;"></div></div>
+          <div style="font-size:12px;color:var(--muto);margin-top:4px;">Preparazione: ${fasiFatte}/${FASI_TRASFERTA.length} fasi</div>
+        `: '<div style="font-size:14px;color:var(--muto);">Nessuna trasferta in programma.</div>'}</div>
+        <div style="margin-top:10px;"><button class="btn btn-p btn-piccolo" onclick="vai('tra')">+ Trasferta</button></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-s" style="border-radius:20px;" onclick="vai('scad')">Scadenze aperte · ${stato.scadenze.filter(s=>!s.fatta).length}</button>
+      <button class="btn btn-s" style="border-radius:20px;" onclick="vai('dati')">Dati e account</button>
+    </div>`;
+}
+
+/* ---------- CALENDARIO ---------- */
+let calAnno = new Date().getFullYear(), calMese = new Date().getMonth(), giornoSel = oggiISO();
+function eventiDiGiorno(iso){
+  const ev=[];
+  stato.sedute.forEach(s=>{ if(s.data===iso) ev.push({t:"cda",l:"Seduta CdA",c:"var(--blu)"});
+    if(scadenzaMemorie(s.data)===iso) ev.push({t:"mem",l:"Termine memorie — CdA del "+fmtIT(s.data),c:"var(--rosso)"}); });
+  stato.scadenze.forEach(x=>{ if(!x.fatta&&x.data===iso) ev.push({t:"scad",l:x.titolo,c:"var(--ocra)"}); });
+  stato.attivita.forEach(a=>{ if(a.stato!=="chiusa"&&a.scadenza===iso) ev.push({t:"att",l:a.titolo+" ("+a.direzione+")",c:"var(--viola)"}); });
+  stato.trasferte.forEach(t=>{ if(t.dal && iso>=t.dal && iso<=(t.al||t.dal)) ev.push({t:"tra",l:"Trasferta: "+t.dest,c:"var(--verde)"}); });
+  stato.eventi.forEach(e=>{ if(e.data && iso>=e.data && iso<=(e.fine||e.data)) ev.push({t:"ev",l:e.titolo,c:"var(--muto)"}); });
+  return ev;
+}
+function viewCalendario(){
+  const nomeMese = new Date(calAnno,calMese,1).toLocaleDateString("it-IT",{month:"long",year:"numeric"});
+  const primo = new Date(calAnno,calMese,1);
+  const offset = (primo.getDay()+6)%7;
+  const nGiorni = new Date(calAnno,calMese+1,0).getDate();
+  let celle=[]; for(let i=0;i<offset;i++) celle.push(null); for(let g=1;g<=nGiorni;g++) celle.push(g);
+  const isoDi = g => `${calAnno}-${String(calMese+1).padStart(2,"0")}-${String(g).padStart(2,"0")}`;
+  const evSel = eventiDiGiorno(giornoSel);
+  return `
+    <div class="titolo">Calendario</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <button class="btn btn-s btn-piccolo" onclick="spostaMese(-1)">‹</button>
+        <div class="serif" style="font-size:18px;font-weight:700;text-transform:capitalize;">${nomeMese}</div>
+        <button class="btn btn-s btn-piccolo" onclick="spostaMese(1)">›</button>
+      </div>
+      <div class="cal-grid">
+        ${["L","M","M","G","V","S","D"].map(g=>`<div style="text-align:center;font-size:11px;font-weight:700;color:var(--muto);">${g}</div>`).join("")}
+        ${celle.map(g=>{
+          if(g===null) return "<div></div>";
+          const iso=isoDi(g), ev=eventiDiGiorno(iso), sel=iso===giornoSel, isOggi=iso===oggiISO();
+          return `<div class="cal-giorno ${sel?"sel":""} ${isOggi?"oggi":""}" onclick="selGiorno('${iso}')">
+            <div style="font-size:14px;font-weight:${isOggi||sel?800:500};">${g}</div>
+            <div style="display:flex;justify-content:center;gap:2px;margin-top:2px;flex-wrap:wrap;">${ev.slice(0,4).map(e=>`<span style="width:6px;height:6px;border-radius:3px;background:${sel?"#fff":e.c};display:inline-block;"></span>`).join("")}</div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muto);">
+        <span><span class="dot" style="background:var(--blu);"></span>CdA</span>
+        <span><span class="dot" style="background:var(--rosso);"></span>Termine memorie</span>
+        <span><span class="dot" style="background:var(--ocra);"></span>Scadenza</span>
+        <span><span class="dot" style="background:var(--viola);"></span>Attività</span>
+        <span><span class="dot" style="background:var(--verde);"></span>Trasferta</span>
+        <span><span class="dot" style="background:var(--muto);"></span>Evento</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="serif" style="font-size:17px;font-weight:700;margin-bottom:8px;">${fmtIT(giornoSel)}</div>
+      ${evSel.length===0? '<div style="font-size:14px;color:var(--muto);margin-bottom:8px;">Nessun impegno in questo giorno.</div>' :
+        evSel.map(e=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F0EEE6;"><span class="dot" style="background:${e.c};"></span><span style="font-size:15px;color:${e.t==="mem"?"var(--rosso)":"var(--testo)"};font-weight:${e.t==="mem"?700:400};">${esc(e.l)}</span></div>`).join("")}
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn btn-p btn-piccolo" onclick="creaSedutaRapida()">+ Seduta CdA</button>
+        <button class="btn btn-s btn-piccolo" onclick="vai('scad')">+ Scadenza</button>
+        <button class="btn btn-s btn-piccolo" onclick="vai('tra')">+ Trasferta</button>
+      </div>
+    </div>
+    <div class="card" style="background:var(--carta2);">
+      <div style="font-size:14px;">Il calendario si aggiorna da solo da Google Calendar all'apertura e ogni ora mentre la pagina resta aperta. Puoi anche forzarlo dal quadrante Home con "⟳ Aggiorna". Il titolo dell'evento decide cosa succede: «<b>CdA</b>» crea la seduta, «<b>Trasferta …</b>» crea la trasferta, «<b>Scadenza …</b>» crea la scadenza; tutto il resto entra come impegno personale.</div>
+    </div>`;
+}
+function spostaMese(d){ const dt=new Date(calAnno,calMese+d,1); calAnno=dt.getFullYear(); calMese=dt.getMonth(); render(); }
+function selGiorno(iso){ giornoSel=iso; render(); }
+function creaSedutaRapida(){ stato.sedute.push({id:nuovoId(),data:giornoSel,memorie:[]}); stato.sedute.sort((a,b)=>a.data.localeCompare(b.data)); agg(); }
+
+/* ---------- CdA ---------- */
+function viewCdA(){
+  const seduteOrd = [...stato.sedute].sort((a,b)=>a.data.localeCompare(b.data));
+  return `<div class="titolo">Consiglio di Amministrazione</div>
+    <div class="card">
+      <label><span>Data nuova seduta</span><input type="date" id="nuovaDataSeduta"/></label>
+      <button class="btn btn-p" onclick="aggiungiSeduta()">Aggiungi seduta</button>
+      <div style="font-size:13px;color:var(--muto);margin-top:8px;">Il termine per le memorie si calcola da solo: 10 giorni prima della seduta.</div>
+    </div>
+    ${seduteOrd.map(sed=>{
+      const sm = scadenzaMemorie(sed.data);
+      return `<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;">
+          <div class="serif" style="font-size:18px;font-weight:700;">Seduta del ${fmtIT(sed.data)}</div>${badge(giorniA(sed.data))}
+        </div>
+        <div style="font-size:14px;color:var(--muto);margin:4px 0 10px;">Memorie entro il <b>${fmtIT(sm)}</b></div>
+        ${(sed.memorie||[]).map(m=>{
+          const fuori = m.ricevutaIl && sm && m.ricevutaIl>sm;
+          return `<div style="border-top:1px solid #F0EEE6;padding:10px 0;">
+            <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <div><div style="font-weight:700;">${esc(m.dirigente)}</div><div style="font-size:14px;">${esc(m.oggetto)}</div>
+                <div style="font-size:13px;color:${fuori?"var(--rosso)":"var(--muto)"};font-weight:${fuori?700:400};">${m.ricevutaIl? "Ricevuta il "+fmtIT(m.ricevutaIl)+(fuori?" — FUORI TERMINE":"") : "In attesa"}</div></div>
+              <select onchange="cambiaMemoria('${sed.id}','${m.id}','stato',this.value)">
+                <option value="attesa" ${m.stato==="attesa"?"selected":""}>In attesa</option>
+                <option value="ricevuta" ${m.stato==="ricevuta"?"selected":""}>Ricevuta</option>
+                <option value="istruita" ${m.stato==="istruita"?"selected":""}>Istruita</option>
+              </select>
+            </div>
+            ${!m.ricevutaIl? `<button class="btn btn-s btn-piccolo" style="margin-top:6px;" onclick="cambiaMemoria('${sed.id}','${m.id}','ricevutaIl','${oggiISO()}')">Segna ricevuta oggi</button>`:""}
+          </div>`;
+        }).join("")}
+        <div style="border-top:1px solid #F0EEE6;padding-top:10px;margin-top:4px;">
+          <label><span>Dirigente / Direzione</span><input id="dir_${sed.id}" placeholder="es. Direzione Risorse"/></label>
+          <label><span>Oggetto della memoria</span><input id="ogg_${sed.id}" placeholder="es. Avanzamenti area IT"/></label>
+          <label><span>Ricevuta il (lascia vuoto se in attesa)</span><input type="date" id="ric_${sed.id}"/></label>
+          <button class="btn btn-p btn-piccolo" onclick="aggiungiMemoria('${sed.id}')">Salva memoria</button>
+          <button class="btn btn-d btn-piccolo" onclick="eliminaSeduta('${sed.id}')">Elimina seduta</button>
+        </div>
+      </div>`;
+    }).join("")}
+    <div class="card" style="background:var(--carta2);">
+      <div style="font-size:14px;">Istruttoria assistita: quando arriva una memoria, apri una chat con Claude, incollala e scrivi «Istruisci questa memoria per la seduta CdA del [data]». Poi aggiorna qui lo stato in Istruita.</div>
+    </div>`;
+}
+function aggiungiSeduta(){ const d=document.getElementById("nuovaDataSeduta").value; if(!d) return; stato.sedute.push({id:nuovoId(),data:d,memorie:[]}); stato.sedute.sort((a,b)=>a.data.localeCompare(b.data)); agg(); }
+function eliminaSeduta(id){ if(!confirm("Eliminare la seduta e le sue memorie?")) return; stato.sedute=stato.sedute.filter(s=>s.id!==id); agg(); }
+function aggiungiMemoria(sedId){
+  const dir=document.getElementById("dir_"+sedId).value, ogg=document.getElementById("ogg_"+sedId).value, ric=document.getElementById("ric_"+sedId).value;
+  if(!dir||!ogg) return;
+  const sed = stato.sedute.find(s=>s.id===sedId); if(!sed) return;
+  sed.memorie = sed.memorie||[];
+  sed.memorie.push({id:nuovoId(),dirigente:dir,oggetto:ogg,ricevutaIl:ric||"",stato:ric?"ricevuta":"attesa"});
+  agg();
+}
+function cambiaMemoria(sedId,memId,campo,val){
+  const sed = stato.sedute.find(s=>s.id===sedId); if(!sed) return;
+  const m = (sed.memorie||[]).find(x=>x.id===memId); if(!m) return;
+  m[campo]=val; agg();
+}
+
+/* ---------- ATTIVITÀ ---------- */
+let filtroDirezione="tutte", mostraChiuseAtt=false;
+function viewAttivita(){
+  const direzioni=[...new Set(stato.attivita.map(a=>a.direzione))].sort();
+  const lista = stato.attivita
+    .filter(a=> filtroDirezione==="tutte" || a.direzione===filtroDirezione)
+    .filter(a=> mostraChiuseAtt || a.stato!=="chiusa")
+    .sort((a,b)=>(a.scadenza||"9999").localeCompare(b.scadenza||"9999"));
+  return `<div class="titolo">Attività dalle sedute CdA</div>
+    <div class="card" style="background:var(--carta2);"><div style="font-size:14px;">Al termine di ogni CdA, lavora l'esito con Claude: ti darà un blocchetto da incollare qui sotto.</div></div>
+    <div class="card">
+      <textarea id="testoAtt" placeholder='{"seduta":"2026-10-01","attivita":[{"titolo":"…","direzione":"…","scadenza":"2026-10-20"}]}' style="min-height:80px;"></textarea>
+      <button class="btn btn-p" style="margin-top:8px;" onclick="importaAttivita()">Importa attività</button>
+      <div id="esitoAtt"></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+        <select onchange="filtroDirezione=this.value;render();" style="width:auto;">
+          <option value="tutte">Tutte le direzioni</option>
+          ${direzioni.map(d=>`<option value="${esc(d)}" ${filtroDirezione===d?"selected":""}>${esc(d)}</option>`).join("")}
+        </select>
+        <button class="btn btn-s btn-piccolo" onclick="mostraChiuseAtt=!mostraChiuseAtt;render();">${mostraChiuseAtt?"Nascondi chiuse":"Mostra anche chiuse"}</button>
+      </div>
+      ${lista.length===0? '<div style="color:var(--muto);font-size:14px;">Nessuna attività da mostrare.</div>' :
+        lista.map(a=>`<div style="border-top:1px solid #F0EEE6;padding:10px 0;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;"><div style="font-weight:700;${a.stato==="chiusa"?"text-decoration:line-through;opacity:.55;":""}">${esc(a.titolo)}</div>
+            <div style="font-size:13px;color:var(--muto);">${esc(a.direzione)}${a.origine?" · "+esc(a.origine):""}${a.scadenza?" · entro il "+fmtIT(a.scadenza):""}</div></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            ${a.scadenza && a.stato!=="chiusa" ? badge(giorniA(a.scadenza)) : ""}
+            <select onchange="cambiaAttivita('${a.id}','stato',this.value)">
+              <option value="da avviare" ${a.stato==="da avviare"?"selected":""}>Da avviare</option>
+              <option value="in corso" ${a.stato==="in corso"?"selected":""}>In corso</option>
+              <option value="chiusa" ${a.stato==="chiusa"?"selected":""}>Chiusa</option>
+            </select>
+            <button class="btn btn-d btn-piccolo" onclick="eliminaAttivita('${a.id}')">✕</button>
+          </div></div>`).join("")}
+    </div>`;
+}
+function importaAttivita(){
+  const testo = document.getElementById("testoAtt").value.trim();
+  const esitoEl = document.getElementById("esitoAtt");
+  try{
+    const match = testo.match(/\{[\s\S]*\}/); if(!match) throw 0;
+    const dati = JSON.parse(match[0]);
+    const lista = Array.isArray(dati)? dati : (dati.attivita||[]);
+    const origine = dati.seduta? "CdA del "+fmtIT(dati.seduta) : "";
+    const nuove = lista.map(a=>({id:nuovoId(),titolo:a.titolo||a.attivita||"",direzione:a.direzione||a.assegnataria||"—",scadenza:a.scadenza||a.entro||"",stato:"da avviare",origine:a.origine||origine})).filter(a=>a.titolo);
+    if(nuove.length===0) throw 0;
+    stato.attivita.push(...nuove);
+    esitoEl.innerHTML = `<div class="esito ok">Aggiunte ${nuove.length} attività dall'esito CdA.</div>`;
+    document.getElementById("testoAtt").value="";
+    agg();
+  }catch(e){
+    esitoEl.innerHTML = `<div class="esito no">Formato non riconosciuto. Incolla il blocchetto per intero.</div>`;
+  }
+}
+function cambiaAttivita(id,campo,val){ const a=stato.attivita.find(x=>x.id===id); if(a){ a[campo]=val; agg(); } }
+function eliminaAttivita(id){ stato.attivita=stato.attivita.filter(a=>a.id!==id); agg(); }
+
+/* ---------- SCADENZE ---------- */
+let mostraFatteScad=false;
+function viewScadenze(){
+  const lista = stato.scadenze.filter(s=>mostraFatteScad||!s.fatta).sort((a,b)=>a.data.localeCompare(b.data));
+  return `<div class="titolo">Scadenze</div>
+    <div class="card">
+      <label><span>Cosa scade</span><input id="nuovoTitScad" placeholder="es. Invio dati COVIP"/></label>
+      <label><span>Quando</span><input type="date" id="nuovaDataScad"/></label>
+      <button class="btn btn-p" onclick="aggiungiScadenza()">Aggiungi scadenza</button>
+    </div>
+    <div class="card">
+      ${lista.length===0? '<div style="color:var(--muto);font-size:14px;">Nessuna scadenza da mostrare.</div>' :
+      lista.map(s=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F0EEE6;">
+        <input type="checkbox" ${s.fatta?"checked":""} onchange="toggleScadenza('${s.id}')" style="width:22px;height:22px;"/>
+        <div style="flex:1;"><div style="${s.fatta?"text-decoration:line-through;opacity:.55;":""}">${esc(s.titolo)}</div><div style="font-size:13px;color:var(--muto);">${fmtIT(s.data)}</div></div>
+        ${!s.fatta?badge(giorniA(s.data)):""}
+        <button class="btn btn-d btn-piccolo" onclick="eliminaScadenza('${s.id}')">✕</button>
+      </div>`).join("")}
+      <button class="btn btn-s btn-piccolo" style="margin-top:10px;" onclick="mostraFatteScad=!mostraFatteScad;render();">${mostraFatteScad?"Nascondi completate":"Mostra anche completate"}</button>
+    </div>`;
+}
+function aggiungiScadenza(){ const t=document.getElementById("nuovoTitScad").value, d=document.getElementById("nuovaDataScad").value; if(!t||!d) return; stato.scadenze.push({id:nuovoId(),titolo:t,data:d,fatta:false}); agg(); }
+function toggleScadenza(id){ const s=stato.scadenze.find(x=>x.id===id); if(s){ s.fatta=!s.fatta; agg(); } }
+function eliminaScadenza(id){ stato.scadenze=stato.scadenze.filter(s=>s.id!==id); agg(); }
+
+/* ---------- TRASFERTE ---------- */
+function viewTrasferte(){
+  const lista = [...stato.trasferte].sort((a,b)=>(a.dal||"").localeCompare(b.dal||""));
+  return `<div class="titolo">Trasferte istituzionali</div>
+    <div class="card">
+      <label><span>Destinazione</span><input id="destTra" placeholder="es. CPO Viterbo"/></label>
+      <div style="display:flex;gap:10px;">
+        <label style="flex:1;"><span>Dal</span><input type="date" id="dalTra"/></label>
+        <label style="flex:1;"><span>Al</span><input type="date" id="alTra"/></label>
+      </div>
+      <button class="btn btn-p" onclick="aggiungiTrasferta()">Aggiungi trasferta</button>
+    </div>
+    ${lista.map(t=>{
+      const fatte = FASI_TRASFERTA.filter((_,i)=>t.checklist?.[i]).length;
+      const prompt = `Prepara la trasferta a ${t.dest} del ${fmtIT(t.dal)}${t.al&&t.al!==t.dal?" - "+fmtIT(t.al):""}: scheda territoriale, scaletta slide e tre alloggi vicino alla sede.`;
+      return `<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;">
+          <div class="serif" style="font-size:18px;font-weight:700;">${esc(t.dest)}</div>${badge(giorniA(t.dal))}
+        </div>
+        <div style="font-size:14px;color:var(--muto);margin:2px 0 10px;">${fmtIT(t.dal)} → ${fmtIT(t.al)} · ${fatte}/${FASI_TRASFERTA.length} fasi</div>
+        ${FASI_TRASFERTA.map((f,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #F0EEE6;">
+          <input type="checkbox" ${t.checklist?.[i]?"checked":""} onchange="toggleFaseTrasferta('${t.id}',${i})" style="width:22px;height:22px;"/>
+          <span style="${t.checklist?.[i]?"text-decoration:line-through;opacity:.55;":""}">${f}</span></div>`).join("")}
+        <div style="border-top:1px solid #F0EEE6;padding-top:10px;margin-top:10px;">
+          <div style="font-size:12px;font-weight:700;color:var(--muto);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Prompt pronto per Cowork</div>
+          <textarea readonly style="min-height:60px;background:var(--carta2);" onfocus="this.select()">${esc(prompt)}</textarea>
+          <button class="btn btn-s btn-piccolo" style="margin-top:6px;" onclick="copiaPrompt(this,\`${prompt.replace(/`/g,"")}\`)">Copia</button>
+        </div>
+        <div style="margin-top:10px;"><button class="btn btn-d btn-piccolo" onclick="eliminaTrasferta('${t.id}')">Elimina trasferta</button></div>
+      </div>`;
+    }).join("")}
+    <div class="card" style="background:var(--carta2);"><div style="font-size:14px;">Ogni trasferta ha già il suo prompt pronto per Cowork — apri il progetto <b>Eventi provinciali</b>, incolla, e ottieni scheda territoriale, slide e alloggi.</div></div>`;
+}
+function aggiungiTrasferta(){ const d=document.getElementById("destTra").value, dal=document.getElementById("dalTra").value, al=document.getElementById("alTra").value; if(!d||!dal) return; stato.trasferte.push({id:nuovoId(),dest:d,dal,al:al||dal,checklist:{}}); agg(); }
+function toggleFaseTrasferta(id,i){ const t=stato.trasferte.find(x=>x.id===id); if(t){ t.checklist=t.checklist||{}; t.checklist[i]=!t.checklist[i]; agg(); } }
+function eliminaTrasferta(id){ if(!confirm("Eliminare la trasferta?")) return; stato.trasferte=stato.trasferte.filter(t=>t.id!==id); agg(); }
+async function copiaPrompt(btn, testo){
+  try{ await navigator.clipboard.writeText(testo); btn.textContent="Copiato ✓"; setTimeout(()=>btn.textContent="Copia",2000); }
+  catch(e){ alert("Copia manualmente il testo qui sopra."); }
+}
+
+/* ---------- DATI ---------- */
+function viewDati(){
+  return `<div class="titolo">Dati e account</div>
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:6px;">Sincronizzazione</div>
+      <div style="font-size:13px;color:var(--muto);">I dati sono salvati sul tuo Google Drive (cartella riservata all'app, non visibile tra i tuoi file normali). Stessi dati su ogni dispositivo dove accedi con lo stesso account Google.</div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:8px;">PIN di sblocco</div>
+      ${stato.pin? `<button class="btn btn-d" onclick="rimuoviPin()">Rimuovi PIN</button>` :
+      `<input id="nuovoPin" type="password" inputmode="numeric" placeholder="Nuovo PIN (4-8 cifre)" style="width:180px;display:inline-block;"/>
+       <button class="btn btn-p" onclick="attivaPin()">Attiva PIN</button>`}
+    </div>
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:8px;">Backup</div>
+      <button class="btn btn-s" onclick="esportaBackup()">Scarica backup JSON</button>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;color:var(--rosso);margin-bottom:8px;">Account</div>
+      <button class="btn btn-d" onclick="disconnetti()">Esci</button>
+    </div>`;
+}
+function attivaPin(){ const v=document.getElementById("nuovoPin").value.replace(/\D/g,"").slice(0,8); if(v.length<4) return; stato.pin=v; agg(); }
+function rimuoviPin(){ if(confirm("Rimuovere il PIN?")){ stato.pin=""; agg(); } }
+function esportaBackup(){
+  const blob = new Blob([JSON.stringify(stato,null,2)],{type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url; a.download=`direzione-enpacl-${oggiISO()}.json`; a.click();
+  URL.revokeObjectURL(url);
+}
+function disconnetti(){ google.accounts.oauth2.revoke(accessToken, ()=>{ location.reload(); }); }
+
+function attaccaEventi(){ /* placeholder per eventuali binding aggiuntivi futuri */ }
+</script>
+</body>
+</html>
